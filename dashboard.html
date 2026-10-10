@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="dashboard-card">
+    <div class="brand">SECURE<span>APP</span></div>
+
+    <div class="dashboard-icon">✓</div>
+    <h1>Welcome to your dashboard!</h1>
+    <p class="subtitle">You are successfully logged in.</p>
+
+    <div class="profile">
+      <p><strong>Username:</strong> <span id="username">Loading...</span></p>
+      <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+    </div>
+
+    <p id="message" class="message" role="status"></p>
+    <button id="logoutButton" class="logout">Logout</button>
+  </main>
+
+  <script>
+    async function loadDashboard() {
+      try {
+        const response = await fetch("/api/me", {
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          window.location.replace("/login.html");
+          return;
+        }
+
+        const user = await response.json();
+
+        document.getElementById("username").textContent = user.username;
+        document.getElementById("email").textContent = user.email;
+      } catch {
+        document.getElementById("message").textContent =
+          "Could not load your account details.";
+      }
+    }
+
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+      const button = document.getElementById("logoutButton");
+      button.disabled = true;
+
+      try {
+        const response = await fetch("/api/logout", {
+          method: "POST",
+          credentials: "same-origin"
+        });
+
+        if (response.ok) {
+          window.location.replace("/login.html");
+        } else {
+          document.getElementById("message").textContent =
+            "Logout failed. Please try again.";
+          button.disabled = false;
+        }
+      } catch {
+        document.getElementById("message").textContent =
+          "Unable to connect to the server.";
+        button.disabled = false;
+      }
+    });
+
+    loadDashboard();
+  </script>
+</body>
+</html>
